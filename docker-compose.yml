@@ -1,29 +1,42 @@
 version: '3'
 services:
-  mysqldb:
+  mysql:
     image: mysql/mysql-server:5.7
-    container_name: mysqldb
-    environment:
-      MYSQL_DATABASE: testdb
-      MYSQL_ROOT_PASSWORD: "123"
-      MYSQL_USER: root
+    expose:
+      - 3306
     ports:
       - 3306:3306
-#    volumes:
-#      - my-db:/var/lib/mysql
-  hola:
-#    image: holaweb
-    build:
-      context: .
-      dockerfile: Dockerfile
-    depends_on:
-      - mysqldb
     environment:
-      APP_NAME: java_app
-      DB_MYSQL_HOST: mysqldb
-      DB_MYSQL_PORT: 3306
-      DB_MYSQL_NAME: "testdb"
-      DB_MYSQL_USER: root
-      DB_MYSQL_PASS: 123
+      MYSQL_DATABASE: 'testdb'
+      MYSQL_ROOT_PASSWORD: '123456aA'
+      MYSQL_ROOT_HOST: '%'
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 100M
+        reservations:
+          cpus: '0.25'
+          memory: 50M
+  java_app:
+    build: .
+    depends_on:
+      - mysql
+    links:
+      - mysql
+    environment:
+      DB_MYSQL_HOST: 'mysql'
+      DB_MYSQL_PORT: '3306'
+      DB_MYSQL_NAME: 'testdb'
+      DB_MYSQL_USER: 'root'
+      DB_MYSQL_PASS: '123456aA'
     ports:
       - 8081:8081
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
